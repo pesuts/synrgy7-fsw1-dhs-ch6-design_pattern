@@ -1,9 +1,5 @@
 const { ModelObject, Model } = require('objection')
 
-// class UserModel extends Model { 
-  
-// }
-
 class UsersModel extends Model {
   static get tableName() {
     return "users";

@@ -1,6 +1,6 @@
 const router = require('express').Router()
 
-const UserModel = require('../models/user.model')
+const userServices = require('../service/userServices');
 
 const idChecker = async (req, res, next) => { 
   const id = req.params.id;
@@ -8,7 +8,7 @@ const idChecker = async (req, res, next) => {
 
   if (!(newId > 0)) res.send({ status: "Error", message: "Id not valid" })
 
-  const user = await UserModel.query().where("id", id)
+  const user = await userServices.getUserById(id)
   if (user.length === 0) res.status(404).send({ status: "Error", message: "Id not found" })
   next()
 }
@@ -18,7 +18,7 @@ router.get('/', (req, res) => {
 })
 
 router.get('/users', async (req, res) => { 
-  const users = await UserModel.query();
+  const users = await userServices.getUsers();
   
   res.render("users", {data: users});
 })
@@ -26,7 +26,7 @@ router.get('/users', async (req, res) => {
 router.get('/users/:id', idChecker, async (req, res) => { 
   const id = req.params.id;
 
-  const user = await UserModel.query().where("id", id);
+  const user = await userServices.getUserById(id);
   
   res.render("users", {data: user});
   // res.send({data: user});
@@ -34,37 +34,34 @@ router.get('/users/:id', idChecker, async (req, res) => {
 
 router.post('/users', async (req, res) => { 
   const { name, password, email, phone_number } = req.body;
-  const user = await UserModel.query().insert({
+
+  const user = await userServices.createUser({
     name, password, email, phone_number
   })
   
   res.send({message: "Successs", data: user})
-  // res.render("users", {data: users});
 })
 
 router.put('/users/:id', async (req, res) => { 
   const id = req.params.id;
   const { name, password, email, phone_number } = req.body;
 
-  await UserModel.query().where("id", id).update({
+  await userServices.updateUser({
     name, password, email, phone_number
   })
 
-  const user = await UserModel.query().where("id", id);
-  
+  const user = await getUserById(id);
+
   res.send({message: "Successs", data: user})
-  res.render("users", {data: user});
+  res.render({status: "Success", message: "User sucessfully updated", data: user});
 })
 
 router.delete('/users/:id', async (req, res) => { 
   const id = req.params.id;
 
-  await UserModel.query().deleteById(id);
+  await userServices.deleteUser(id);
 
-  res.send({message: "Successs", data: user})
-  // res.render("users", {data: user});
+  res.send({status: "Success", message: "User sucessfully deleted"})
 })
-
-
 
 module.exports = router;
